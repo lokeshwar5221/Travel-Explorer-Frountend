@@ -3,8 +3,16 @@ import api from "../services/api";
 import DestinationCard from "../components/DestinationCard";
 import { Link } from "react-router-dom";
 function Destinations() {
- const [destinations, setDestinations] =
-   useState([]);
+  const [destinations, setDestinations] =
+    useState([]);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] =
+    useState("");
+  const [budget, setBudget] =
+    useState("");
+  const [sort, setSort] =
+  useState("");
+
 
  useEffect(() => {
    getDestinations();
@@ -35,23 +43,119 @@ async function deleteDestination(id) {
    )
  );
 }
+const filteredDestinations =
+  destinations.filter((destination) => {
+    const searchMatch =
+      destination.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+    const categoryMatch =
+      category === "All" ||
+      destination.category === category;
+
+    const budgetMatch =
+      budget === "All" ||
+      destination.budget === budget;
+
+    return (
+      searchMatch &&
+      categoryMatch &&
+      budgetMatch
+    );
+  });
+
+let finalDestinations = [
+  ...filteredDestinations
+];
+
+if (sort === "high") {
+  finalDestinations.sort(
+    (a, b) => b.rating - a.rating
+  );
+}
+
+if (sort === "low") {
+  finalDestinations.sort(
+    (a, b) => a.rating - b.rating
+  );
+}
  return (
    <>
      <h1>Popular Destinations</h1>
+     <div className="filters">
+        <input
+          type="text"
+          placeholder="Search Destination"
+          value={search}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
+        />
+      
+        <select
+          value={category}
+          onChange={(e) =>
+            setCategory(e.target.value)
+          }
+        >
+          <option value="" disabled>
+            Select Category
+          </option>
+          <option>All</option>
+          <option>Beach</option>
+          <option>Hill Station</option>
+          <option>Adventure</option>
+        </select>
+      
+        <select
+          value={budget}
+          onChange={(e) =>
+            setBudget(e.target.value)
+          }
+        >
+          <option value="" disabled>
+            Select Budget
+          </option>
+          <option>All</option>
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+      
+        <select
+          value={sort}
+          onChange={(e) =>
+            setSort(e.target.value)
+          }
+        >
+          <option value=""disabled>
+            Sort By Rating
+          </option>
+          <option value="high">
+            High To Low
+          </option>
+          <option value="low">
+            Low To High
+          </option>
+        </select>
+      </div>
+
      <div>
-     <Link className="view-btn"
+     <Link className="add-btn"
       to="/add-destination">
       Add Destination
      </Link>
     </div>
+
+
      <div className="destinations">
-       {destinations.map((destination) => (
-         <DestinationCard
-         onDelete={deleteDestination}
-           key={destination.id}
-           destination={destination}
-         />
-       ))}
+       {finalDestinations.map((destination) => (
+        <DestinationCard
+          key={destination.id}
+          destination={destination}
+        />
+      ))}
      </div>
    </>
  );
